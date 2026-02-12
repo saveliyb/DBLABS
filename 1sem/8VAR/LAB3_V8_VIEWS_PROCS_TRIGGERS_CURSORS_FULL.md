@@ -304,7 +304,7 @@ $$;
 
 ### TEST (ВАЖНО: передаём DATE, не timestamp)
 ```sql
-CALL p_income_expense_for_period(CURRENT_DATE - 10, CURRENT_DATE);
+CALL p_income_expense_for_period(CURRENT_DATE - 10, CURRENT_DATE, NULL, NULL);
 ```
 
 Ожидаемо:
