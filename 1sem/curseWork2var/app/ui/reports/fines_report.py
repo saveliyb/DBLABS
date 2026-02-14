@@ -113,19 +113,19 @@ class FinesReport(QWidget):
             if not path.lower().endswith('.txt'):
                 path = path + '.txt'
             header_lines = []
-            from datetime import date as _d
-            header_lines.append(f"Generated: {_d.today().isoformat()}")
-            if self.le_from.text().strip():
-                header_lines.append(f"Date from: {self.le_from.text().strip()}")
-            if self.le_to.text().strip():
-                header_lines.append(f"Date to: {self.le_to.text().strip()}")
+            header_lines.append(f"Generated: {date.today().isoformat()}")
+            header_lines.append("Report: Fines")
+            df_text = self.le_from.text().strip()
+            dt_text = self.le_to.text().strip()
+            header_lines.append(f"Date from: {df_text}")
+            header_lines.append(f"Date to: {dt_text}")
             header_lines.append('')
             body = format_table_txt(self._columns, self._rows, max_col_width=40)
             with open(path, 'w', encoding='utf-8') as fh:
                 fh.write('\n'.join(header_lines) + '\n' + body)
-            QMessageBox.information(self, 'OK', 'Экспорт завершён')
+            QMessageBox.information(self, 'OK', f'Сохранено: {path}')
         except Exception as e:
-            QMessageBox.critical(self, 'Ошибка', f'Не удалось сохранить файл: {type(e).__name__}')
+            QMessageBox.critical(self, 'Ошибка', f'{type(e).__name__}: {e}')
 
     def on_reset(self):
         self.le_from.clear()

@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QDateEdit,
     QPushButton,
     QTableView,
+    QFileDialog,
     QMessageBox,
 )
 from PySide6.QtCore import Qt, QDate
@@ -40,6 +41,8 @@ class Top5ReportPage(QWidget):
         ctrl.addWidget(self.date_edit)
         self.btn_gen = QPushButton("Сформировать")
         ctrl.addWidget(self.btn_gen)
+        self.btn_export = QPushButton("Экспорт в TXT")
+        ctrl.addWidget(self.btn_export)
         ctrl.addStretch()
         layout.addLayout(ctrl)
 
@@ -53,6 +56,7 @@ class Top5ReportPage(QWidget):
         layout.addWidget(self.view)
 
         self.btn_gen.clicked.connect(self.refresh)
+        self.btn_export.clicked.connect(self.export_to_txt)
 
     @property
     def loaded(self) -> bool:
@@ -94,3 +98,59 @@ LIMIT 5
         except Exception as e:
             self._loaded = False
             QMessageBox.critical(self, "DB error", str(e))
+
+    def export_to_txt(self) -> None:
+        try:
+            rows_count = self.model.rowCount()
+            cols_count = self.model.columnCount()
+            if rows_count == 0 or cols_count == 0:
+                QMessageBox.warning(self, "Нет данных", "Нет данных для экспорта")
+                return
+
+            headers = list(getattr(self.model, "_headers", []))
+            data_rows = getattr(self.model, "_rows", None) or getattr(self.model, "_data", None) or []
+            data_rows = list(data_rows)
+
+            file_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Сохранить отчет",
+                "",
+                "Text files (*.txt)"
+            )
+            if not file_path:
+                return
+            if not file_path.lower().endswith(".txt"):
+                file_path += ".txt"
+
+            col_widths = []
+            for c in range(len(headers)):
+                max_w = len(str(headers[c]))
+                for r in data_rows:
+                    try:
+                        val = r[c]
+                    except Exception:
+                        val = ""
+                    max_w = max(max_w, len(str(val)))
+                col_widths.append(max_w + 2)
+
+            lines = []
+            lines.append(f"Отчет: {self.title}")
+            lines.append(f"Дата формирования: {date.today()}")
+            lines.append("" + "-" * 40)
+
+            header_line = " | ".join(str(h).ljust(col_widths[i]) for i, h in enumerate(headers))
+            lines.append(header_line)
+            lines.append("" + "-" * len(header_line))
+
+            for r in data_rows:
+                line = " | ".join(str(r[i]).ljust(col_widths[i]) for i in range(len(headers)))
+                lines.append(line)
+
+            text = "\n".join(lines)
+
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(text)
+
+            QMessageBox.information(self, "Экспорт", "Отчет успешно сохранён")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка экспорта", str(e))
