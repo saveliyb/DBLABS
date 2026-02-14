@@ -1,0 +1,6 @@
+[postgresql]
+host=localhost
+port=5432
+dbname=shop
+user=shop_user
+password=secret
