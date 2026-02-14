@@ -25,6 +25,19 @@ SELECT
 ```
 **Ожидаем:** везде не `NULL`.
 
+**отключаем тригеры**
+```sql
+BEGIN;
+
+DROP TRIGGER IF EXISTS tr_t3_journal_no_delete_if_onhand ON journal;
+DROP TRIGGER IF EXISTS tr_t3_journal_ret_not_before_beg ON journal;
+
+DROP FUNCTION IF EXISTS f_t3_journal_no_delete_if_onhand();
+DROP FUNCTION IF EXISTS f_t3_journal_ret_not_before_beg();
+
+COMMIT;
+```
+
 ---
 
 # 1) ВЫБОРКА ДАННЫХ (SELECT)
